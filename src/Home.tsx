@@ -1,15 +1,15 @@
-import { useEffect, useState } from "react";
-import styled from "styled-components";
-import Countdown from "react-countdown";
-import { Button, CircularProgress, Snackbar } from "@material-ui/core";
-import Alert from "@material-ui/lab/Alert";
+import { useEffect, useState, useLayoutEffect, useRef } from 'react';
+import styled from 'styled-components';
+import Countdown from 'react-countdown';
+import { Button, CircularProgress, Snackbar } from '@material-ui/core';
+import Alert from '@material-ui/lab/Alert';
 
-import * as anchor from "@project-serum/anchor";
+import * as anchor from '@project-serum/anchor';
 
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 
-import { useAnchorWallet } from "@solana/wallet-adapter-react";
-import { WalletDialogButton } from "@solana/wallet-adapter-material-ui";
+import { useAnchorWallet } from '@solana/wallet-adapter-react';
+import { WalletDialogButton } from '@solana/wallet-adapter-material-ui';
 
 import {
   CandyMachine,
@@ -17,15 +17,35 @@ import {
   getCandyMachineState,
   mintOneToken,
   shortenAddress,
-} from "./candy-machine";
+} from './candy-machine';
 
-const ConnectButton = styled(WalletDialogButton)``;
+const ConnectButton = styled(WalletDialogButton)`
+  background-color: black !important;
+  color: white;
+`;
+
+const MainContainer = styled.div`
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  gap: 3%;
+  align-items: center;
+`;
+
+const DisplayContainer = styled.div`
+  flex: 1;
+`;
 
 const CounterText = styled.span``; // add your styles here
 
-const MintContainer = styled.div``; // add your styles here
+const MintContainer = styled.div`
+  flex: 1;
+`; // add your styles here
 
-const MintButton = styled(Button)``; // add your styles here
+const MintButton = styled(Button)`
+  background-color: black !important;
+  color: white;
+`; // add your styles here
 
 export interface HomeProps {
   candyMachineId: anchor.web3.PublicKey;
@@ -48,7 +68,7 @@ const Home = (props: HomeProps) => {
 
   const [alertState, setAlertState] = useState<AlertState>({
     open: false,
-    message: "",
+    message: '',
     severity: undefined,
   });
 
@@ -56,6 +76,21 @@ const Home = (props: HomeProps) => {
 
   const wallet = useAnchorWallet();
   const [candyMachine, setCandyMachine] = useState<CandyMachine>();
+
+  // images
+  const [displayImageIndex, setDisplayImageIndex] = useState(0); // true when user got to press MINT
+  const displayImagePaths = [
+    '/6628.png',
+    '/7301.png',
+    '/7302.png',
+    '/7303.png',
+    '/7304.png',
+    '/7305.png',
+    '/7306.png',
+    '/7307.png',
+    '/7308.png',
+    '/7309.png',
+  ];
 
   const refreshCandyMachineState = () => {
     (async () => {
@@ -98,32 +133,32 @@ const Home = (props: HomeProps) => {
           mintTxId,
           props.txTimeout,
           props.connection,
-          "singleGossip",
+          'singleGossip',
           false
         );
 
         if (!status?.err) {
           setAlertState({
             open: true,
-            message: "Congratulations! Mint succeeded!",
-            severity: "success",
+            message: 'Congratulations! Mint succeeded!',
+            severity: 'success',
           });
         } else {
           setAlertState({
             open: true,
-            message: "Mint failed! Please try again!",
-            severity: "error",
+            message: 'Mint failed! Please try again!',
+            severity: 'error',
           });
         }
       }
     } catch (error: any) {
       // TODO: blech:
-      let message = error.msg || "Minting failed! Please try again!";
+      let message = error.msg || 'Minting failed! Please try again!';
       if (!error.msg) {
-        if (error.message.indexOf("0x138")) {
-        } else if (error.message.indexOf("0x137")) {
+        if (error.message.indexOf('0x138')) {
+        } else if (error.message.indexOf('0x137')) {
           message = `SOLD OUT!`;
-        } else if (error.message.indexOf("0x135")) {
+        } else if (error.message.indexOf('0x135')) {
           message = `Insufficient funds to mint. Please fund your wallet.`;
         }
       } else {
@@ -138,7 +173,7 @@ const Home = (props: HomeProps) => {
       setAlertState({
         open: true,
         message,
-        severity: "error",
+        severity: 'error',
       });
     } finally {
       if (wallet) {
@@ -149,6 +184,36 @@ const Home = (props: HomeProps) => {
       refreshCandyMachineState();
     }
   };
+
+  function useInterval(callback: () => void, delay: number | null) {
+    const savedCallback = useRef(callback);
+
+    // Remember the latest callback if it changes.
+    useLayoutEffect(() => {
+      savedCallback.current = callback;
+    }, [callback]);
+
+    // Set up the interval.
+    useEffect(() => {
+      // Don't schedule if no delay is specified.
+      if (!delay) {
+        return;
+      }
+
+      const id = setInterval(() => savedCallback.current(), delay);
+
+      return () => clearInterval(id);
+    }, [delay]);
+  }
+
+  useInterval(() => {
+    if (displayImageIndex >= displayImagePaths.length - 1) {
+      setDisplayImageIndex(0);
+    } else {
+      setDisplayImageIndex(displayImageIndex + 1);
+    }
+    // setDisplayImageIndex((displayImageIndex) => displayImageIndex + 1);
+  }, 100);
 
   useEffect(() => {
     (async () => {
@@ -167,59 +232,67 @@ const Home = (props: HomeProps) => {
 
   return (
     <main>
-      {wallet && (
-        <p>Wallet {shortenAddress(wallet.publicKey.toBase58() || "")}</p>
-      )}
+      <MainContainer>
+        <DisplayContainer>
+          <img
+            id="display-img"
+            src={displayImagePaths[displayImageIndex]}
+          ></img>
+        </DisplayContainer>
+        <MintContainer>
+          {wallet && (
+            <p>Wallet {shortenAddress(wallet.publicKey.toBase58() || '')}</p>
+          )}
 
-      {wallet && <p>Balance: {(balance || 0).toLocaleString()} SOL</p>}
+          {wallet && <p>Balance: {(balance || 0).toLocaleString()} SOL</p>}
 
-      {wallet && <p>Total Available: {itemsAvailable}</p>}
+          {wallet && <p>Total Available: {itemsAvailable}</p>}
 
-      {wallet && <p>Redeemed: {itemsRedeemed}</p>}
+          {wallet && <p>Redeemed: {itemsRedeemed}</p>}
 
-      {wallet && <p>Remaining: {itemsRemaining}</p>}
+          {wallet && <p>Remaining: {itemsRemaining}</p>}
 
-      <MintContainer>
-        {!wallet ? (
-          <ConnectButton>Connect Wallet</ConnectButton>
-        ) : (
-          <MintButton
-            disabled={isSoldOut || isMinting || !isActive}
-            onClick={onMint}
-            variant="contained"
-          >
-            {isSoldOut ? (
-              "SOLD OUT"
-            ) : isActive ? (
-              isMinting ? (
-                <CircularProgress />
+          {!wallet ? (
+            <ConnectButton>Connect Wallet</ConnectButton>
+          ) : (
+            <MintButton
+              disabled={isSoldOut || isMinting || !isActive}
+              onClick={onMint}
+              variant="contained"
+            >
+              {isSoldOut ? (
+                'SOLD OUT'
+              ) : isActive ? (
+                isMinting ? (
+                  <CircularProgress />
+                ) : (
+                  'MINT'
+                )
               ) : (
-                "MINT"
-              )
-            ) : (
-              <Countdown
-                date={startDate}
-                onMount={({ completed }) => completed && setIsActive(true)}
-                onComplete={() => setIsActive(true)}
-                renderer={renderCounter}
-              />
-            )}
-          </MintButton>
-        )}
-      </MintContainer>
+                <Countdown
+                  date={startDate}
+                  onMount={({ completed }) => completed && setIsActive(true)}
+                  onComplete={() => setIsActive(true)}
+                  renderer={renderCounter}
+                />
+              )}
+            </MintButton>
+          )}
+        </MintContainer>
 
-      <Snackbar
-        open={alertState.open}
-        autoHideDuration={6000}
-        onClose={() => setAlertState({ ...alertState, open: false })}
-      >
-        <Alert
+        <Snackbar
+          open={alertState.open}
+          autoHideDuration={6000}
           onClose={() => setAlertState({ ...alertState, open: false })}
-          severity={alertState.severity}
         >
-          {alertState.message}
-        </Alert>
-      </Snackbar>
+          <Alert
+            onClose={() => setAlertState({ ...alertState, open: false })}
+            severity={alertState.severity}
+          >
+            {alertState.message}
+          </Alert>
+        </Snackbar>
+      </MainContainer>
     </main>
   );
 };
@@ -227,7 +300,7 @@ const Home = (props: HomeProps) => {
 interface AlertState {
   open: boolean;
   message: string;
-  severity: "success" | "info" | "warning" | "error" | undefined;
+  severity: 'success' | 'info' | 'warning' | 'error' | undefined;
 }
 
 const renderCounter = ({ days, hours, minutes, seconds, completed }: any) => {
