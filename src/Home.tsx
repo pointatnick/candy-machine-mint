@@ -237,6 +237,7 @@ const Home = (props: HomeProps) => {
           <img
             id="display-img"
             src={displayImagePaths[displayImageIndex]}
+            alt="Diamond on display"
           ></img>
         </DisplayContainer>
         <MintContainer>
