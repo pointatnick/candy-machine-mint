@@ -1,7 +1,7 @@
 import { useEffect, useState, useLayoutEffect, useRef } from 'react';
 import styled from 'styled-components';
 import Countdown from 'react-countdown';
-import { Button, CircularProgress, Snackbar } from '@material-ui/core';
+import { CircularProgress, Snackbar } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 
 import * as anchor from '@project-serum/anchor';
@@ -9,7 +9,6 @@ import * as anchor from '@project-serum/anchor';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
-import { WalletDialogButton } from '@solana/wallet-adapter-material-ui';
 
 import {
   CandyMachine,
@@ -19,33 +18,55 @@ import {
   shortenAddress,
 } from './candy-machine';
 
-const ConnectButton = styled(WalletDialogButton)`
-  background-color: black !important;
-  color: white;
-`;
-
-const MainContainer = styled.div`
-  height: 100vh;
-  width: 100%;
-  display: flex;
-  gap: 3%;
-  align-items: center;
-`;
-
-const DisplayContainer = styled.div`
-  flex: 1;
-`;
+import {
+  MainContainer,
+  DisplayContainer,
+  InfoContainer,
+  MintContainer,
+  MintButton,
+  ConnectButton,
+} from './components';
 
 const CounterText = styled.span``; // add your styles here
-
-const MintContainer = styled.div`
-  flex: 1;
-`; // add your styles here
-
-const MintButton = styled(Button)`
-  background-color: black !important;
-  color: white;
-`; // add your styles here
+const DisplayImage = styled.img`
+  max-width: 100%;
+  border-radius: 1em;
+  place-self: center;
+`;
+const Header = styled.div`
+  font-size: 2rem;
+  font-family: 'Josefin Sans';
+  margin-bottom: 1rem;
+  margin-left: 2.5rem;
+`;
+const Text = styled.div`
+  font-size: 1.5rem;
+  font-family: 'Cormorant';
+`;
+const MintText = styled(Text)`
+  font-size: 2rem;
+  margin-left: 6rem;
+  margin-right: 6rem;
+  font-family: monospace;
+`;
+const Title = styled.div`
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+  font-size: 4.5rem;
+  line-height: 1;
+  text-align: center;
+  font-family: 'Josefin Sans';
+  text-transform: uppercase;
+`;
+const SolanaBanner = styled.div`
+  background: rgb(255, 0, 255);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 0, 255, 1) 0%,
+    rgba(0, 255, 255, 1) 100%
+  );
+  padding-bottom: 0.75rem;
+`;
 
 export interface HomeProps {
   candyMachineId: anchor.web3.PublicKey;
@@ -76,22 +97,6 @@ const Home = (props: HomeProps) => {
 
   const wallet = useAnchorWallet();
   const [candyMachine, setCandyMachine] = useState<CandyMachine>();
-
-  // images
-  const [displayImageIndex, setDisplayImageIndex] = useState(0); // true when user got to press MINT
-  const displayImagePaths = [
-    '/6628.png',
-    '/7301.png',
-    '/7302.png',
-    '/7303.png',
-    '/7304.png',
-    '/7305.png',
-    '/7306.png',
-    '/7307.png',
-    '/7308.png',
-    '/7309.png',
-  ];
-
   const refreshCandyMachineState = () => {
     (async () => {
       if (!wallet) return;
@@ -185,36 +190,6 @@ const Home = (props: HomeProps) => {
     }
   };
 
-  function useInterval(callback: () => void, delay: number | null) {
-    const savedCallback = useRef(callback);
-
-    // Remember the latest callback if it changes.
-    useLayoutEffect(() => {
-      savedCallback.current = callback;
-    }, [callback]);
-
-    // Set up the interval.
-    useEffect(() => {
-      // Don't schedule if no delay is specified.
-      if (!delay) {
-        return;
-      }
-
-      const id = setInterval(() => savedCallback.current(), delay);
-
-      return () => clearInterval(id);
-    }, [delay]);
-  }
-
-  useInterval(() => {
-    if (displayImageIndex >= displayImagePaths.length - 1) {
-      setDisplayImageIndex(0);
-    } else {
-      setDisplayImageIndex(displayImageIndex + 1);
-    }
-    // setDisplayImageIndex((displayImageIndex) => displayImageIndex + 1);
-  }, 100);
-
   useEffect(() => {
     (async () => {
       if (wallet) {
@@ -232,29 +207,30 @@ const Home = (props: HomeProps) => {
 
   return (
     <main>
+      <SolanaBanner></SolanaBanner>
+      <Title>fancy diamonds</Title>
       <MainContainer>
         <DisplayContainer>
-          <img
-            id="display-img"
-            src={displayImagePaths[displayImageIndex]}
-            alt="Diamond on display"
-          ></img>
+          <DisplayImage
+            src="./diamonds.gif"
+            alt="Diamonds on display"
+          ></DisplayImage>
         </DisplayContainer>
         <MintContainer>
-          {wallet && (
-            <p>Wallet {shortenAddress(wallet.publicKey.toBase58() || '')}</p>
-          )}
-
-          {wallet && <p>Balance: {(balance || 0).toLocaleString()} SOL</p>}
-
-          {wallet && <p>Total Available: {itemsAvailable}</p>}
-
-          {wallet && <p>Redeemed: {itemsRedeemed}</p>}
-
-          {wallet && <p>Remaining: {itemsRemaining}</p>}
+          <MintText>
+            {wallet && (
+              <p>Wallet: {shortenAddress(wallet.publicKey.toBase58() || '')}</p>
+            )}
+            {wallet && <p>Cost: 0.5 SOL</p>}
+            {wallet && (
+              <p>
+                {itemsRedeemed} / {itemsAvailable} minted
+              </p>
+            )}
+          </MintText>
 
           {!wallet ? (
-            <ConnectButton>Connect Wallet</ConnectButton>
+            <ConnectButton>connect wallet</ConnectButton>
           ) : (
             <MintButton
               disabled={isSoldOut || isMinting || !isActive}
@@ -267,7 +243,7 @@ const Home = (props: HomeProps) => {
                 isMinting ? (
                   <CircularProgress />
                 ) : (
-                  'MINT'
+                  'mint'
                 )
               ) : (
                 <Countdown
@@ -280,6 +256,22 @@ const Home = (props: HomeProps) => {
             </MintButton>
           )}
         </MintContainer>
+        <InfoContainer>
+          <div>
+            <Header>mint instructions</Header>
+            <Text>
+              <ol>
+                <li>click "connect wallet".</li>
+                <li>select the wallet you want to use.</li>
+                <li>
+                  when it's time to mint, hit the button!
+                  <br />
+                  your diamond will show up in your wallet 💎
+                </li>
+              </ol>
+            </Text>
+          </div>
+        </InfoContainer>
 
         <Snackbar
           open={alertState.open}
