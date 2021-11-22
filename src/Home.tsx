@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useLayoutEffect, useRef } from 'react';
 import styled from 'styled-components';
 import Countdown from 'react-countdown';
 import { CircularProgress, Snackbar } from '@material-ui/core';
@@ -87,6 +87,18 @@ const Home = (props: HomeProps) => {
   });
 
   const [startDate, setStartDate] = useState(new Date(props.startDate));
+
+  // images
+  const [displayImageIndex, setDisplayImageIndex] = useState(0); // true when user got to press MINT
+  const displayImagePaths = [
+    '/2370.png',
+    '/127.png',
+    '/684.png',
+    '/1893.png',
+    '/1027.png',
+    '/217.png',
+    '/1185.png',
+  ];
 
   const wallet = useAnchorWallet();
   const [candyMachine, setCandyMachine] = useState<CandyMachine>();
@@ -178,6 +190,35 @@ const Home = (props: HomeProps) => {
     }
   };
 
+  function useInterval(callback: () => void, delay: number | null) {
+    const savedCallback = useRef(callback);
+
+    // Remember the latest callback if it changes.
+    useLayoutEffect(() => {
+      savedCallback.current = callback;
+    }, [callback]);
+
+    // Set up the interval.
+    useEffect(() => {
+      // Don't schedule if no delay is specified.
+      if (!delay) {
+        return;
+      }
+
+      const id = setInterval(() => savedCallback.current(), delay);
+
+      return () => clearInterval(id);
+    }, [delay]);
+  }
+
+  useInterval(() => {
+    if (displayImageIndex >= displayImagePaths.length - 1) {
+      setDisplayImageIndex(0);
+    } else {
+      setDisplayImageIndex(displayImageIndex + 1);
+    }
+  }, 800);
+
   useEffect(refreshCandyMachineState, [
     wallet,
     props.candyMachineId,
@@ -191,7 +232,8 @@ const Home = (props: HomeProps) => {
       <MainContainer>
         <DisplayContainer>
           <DisplayImage
-            src="./diamonds.gif"
+            id="display-img"
+            src={displayImagePaths[displayImageIndex]}
             alt="Diamonds on display"
           ></DisplayImage>
         </DisplayContainer>
