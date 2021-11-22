@@ -29,6 +29,7 @@ import {
 
 const CounterText = styled.span``; // add your styles here
 const DisplayImage = styled.img`
+  min-width: 240px;
   max-width: 100%;
   border-radius: 1em;
   place-self: center;
@@ -221,7 +222,7 @@ const Home = (props: HomeProps) => {
             {wallet && (
               <p>Wallet: {shortenAddress(wallet.publicKey.toBase58() || '')}</p>
             )}
-            {wallet && <p>Cost: 0.5 SOL</p>}
+            {wallet && <p>Cost: 0.4 SOL</p>}
             {wallet && (
               <p>
                 {itemsRedeemed} / {itemsAvailable} minted
