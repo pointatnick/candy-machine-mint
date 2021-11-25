@@ -78,7 +78,6 @@ const Home = (props: HomeProps) => {
   const [isActive, setIsActive] = useState(false); // true when countdown completes
   const [isSoldOut, setIsSoldOut] = useState(false); // true when items remaining is zero
   const [isMinting, setIsMinting] = useState(false); // true when user got to press MINT
-  const [itemsAvailable, setItemsAvailable] = useState(0);
   const [itemsRedeemed, setItemsRedeemed] = useState(0);
   const [alertState, setAlertState] = useState<AlertState>({
     open: false,
@@ -106,19 +105,13 @@ const Home = (props: HomeProps) => {
     (async () => {
       if (!wallet) return;
 
-      const {
-        candyMachine,
-        goLiveDate,
-        itemsAvailable,
-        itemsRemaining,
-        itemsRedeemed,
-      } = await getCandyMachineState(
-        wallet as anchor.Wallet,
-        props.candyMachineId,
-        props.connection
-      );
+      const { candyMachine, goLiveDate, itemsRedeemed } =
+        await getCandyMachineState(
+          wallet as anchor.Wallet,
+          props.candyMachineId,
+          props.connection
+        );
 
-      setItemsAvailable(itemsAvailable);
       setItemsRedeemed(itemsRedeemed);
 
       // set itemsRedeemed to be just under 777
