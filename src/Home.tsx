@@ -244,7 +244,7 @@ const Home = (props: HomeProps) => {
               <p>Wallet: {shortenAddress(wallet.publicKey.toBase58() || '')}</p>
             )}
             {wallet && <p>Cost: 0.5 SOL</p>}
-            {wallet && <p>{isSoldOut ? 777 : itemsRedeemed} minted</p>}
+            {wallet && <p>{isSoldOut ? 777 : itemsRedeemed} / 777 minted</p>}
           </MintText>
 
           {!wallet ? (
