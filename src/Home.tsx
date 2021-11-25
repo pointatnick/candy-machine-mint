@@ -121,7 +121,8 @@ const Home = (props: HomeProps) => {
       setItemsAvailable(itemsAvailable);
       setItemsRedeemed(itemsRedeemed);
 
-      setIsSoldOut(itemsRemaining === 0);
+      // set itemsRedeemed to be just under 777
+      setIsSoldOut(itemsRedeemed >= 774);
       setStartDate(goLiveDate);
       setCandyMachine(candyMachine);
     })();
@@ -243,11 +244,7 @@ const Home = (props: HomeProps) => {
               <p>Wallet: {shortenAddress(wallet.publicKey.toBase58() || '')}</p>
             )}
             {wallet && <p>Cost: 0.5 SOL</p>}
-            {wallet && (
-              <p>
-                {itemsRedeemed} / {itemsAvailable} minted
-              </p>
-            )}
+            {wallet && <p>{isSoldOut ? 777 : itemsRedeemed} minted</p>}
           </MintText>
 
           {!wallet ? (
